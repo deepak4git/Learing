@@ -8,9 +8,6 @@ import com.databricks.spark.csv
 import org.apache.commons.csv
 import com.databricks.spark.xml.XmlReader
 import com.databricks.spark.xml
-import net.liftweb.json.Xml.toJson
-import net.liftweb.json.JsonAST._
-import org.apache.hadoop.yarn.webapp.ToJSON
 import org.apache.spark.sql.functions.{ udf, explode }
 import scala.io
 
@@ -36,7 +33,10 @@ object XMLParser {
 			val df = new XmlReader().xmlRdd( sqlContext, xmlRDD )
 
 			df.printSchema()
-			df.select( df( "case.agencycode" ) ).show()
+			val fallternData = df.select( "case.agencycode", "case.agencytype", "case.caseid", "case.clientpresent", "case.correctioncount", "case.currency", "case.lineofbusiness", "case.passcount",
+				"case.processmode", "case.underwritingmode", "case.usertype" )
+
+			fallternData.repartition( 1 ).write.mode( "overwrite" ).format( "com.databricks.spark.csv" ).option( "delimiter", "," ).option( "header", "true" ).save( "C:\\WorkingDirectory\\xml\\output" )
 
 		} catch {
 			case e : Exception =>
